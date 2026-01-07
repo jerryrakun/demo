@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Electricity Calculator</title>
+    <style>
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            font-family: "Segoe UI", Arial, sans-serif;
+        }
+
+        .card {
+            background: white;
+            padding: 30px;
+            width: 100%;
+            max-width: 400px;
+            border-radius: 16px;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+        }
+
+        h2 {
+            text-align: center;
+            margin-top: 0;
+        }
+
+        .switch {
+            display: flex;
+            margin-bottom: 20px;
+            background: #eef3ff;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .switch button {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            background: transparent;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .switch button.active {
+            background: #4facfe;
+            color: white;
+        }
+
+        label {
+            font-weight: 600;
+            color: #555;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin-top: 8px;
+            border-radius: 10px;
+            border: 1px solid #ccc;
+            font-size: 16px;
+        }
+
+        button.calculate {
+            width: 100%;
+            margin-top: 20px;
+            padding: 12px;
+            border: none;
+            border-radius: 12px;
+            background: #4facfe;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f4f8ff;
+            border-radius: 12px;
+            line-height: 1.6;
+        }
+
+        .highlight {
+            color: #4facfe;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>⚡ Electricity Calculator</h2>
+
+    <div class="switch">
+        <button id="kwhBtn" class="active" onclick="setMode('kwh')">kWh → Price</button>
+        <button id="priceBtn" onclick="setMode('price')">Price → kWh</button>
+    </div>
+
+    <label id="inputLabel">Electricity Usage (kWh)</label>
+    <input type="number" id="inputValue" min="0" placeholder="Enter kWh">
+
+    <button class="calculate" onclick="calculate()">Calculate</button>
+
+    <div class="result" id="result" style="display:none;"></div>
+</div>
+
+<script>
+    let mode = "kwh"; // kwh or price
+
+    function setMode(selected) {
+        mode = selected;
+
+        document.getElementById("kwhBtn").classList.toggle("active", mode === "kwh");
+        document.getElementById("priceBtn").classList.toggle("active", mode === "price");
+
+        const label = document.getElementById("inputLabel");
+        const input = document.getElementById("inputValue");
+        const result = document.getElementById("result");
+
+        result.style.display = "none";
+        input.value = "";
+
+        if (mode === "kwh") {
+            label.textContent = "Electricity Usage (kWh)";
+            input.placeholder = "Enter kWh";
+        } else {
+            label.textContent = "Total Price (Riel)";
+            input.placeholder = "Enter price in riel";
+        }
+    }
+
+    function getRateByKwh(kwh) {
+        if (kwh <= 10) return 380;
+        if (kwh <= 50) return 480;
+        if (kwh <= 200) return 610;
+        return 730;
+    }
+
+    function calculate() {
+        const value = Number(document.getElementById("inputValue").value);
+        const result = document.getElementById("result");
+
+        if (value <= 0 || isNaN(value)) {
+            result.style.display = "block";
+            result.innerHTML = "❌ Please enter a valid number.";
+            return;
+        }
+
+        if (mode === "kwh") {
+            const rate = getRateByKwh(value);
+            const total = value * rate;
+
+            result.innerHTML = `
+                Rate: <span class="highlight">${rate} riel/kWh</span><br>
+                Total Price: <span class="highlight">${total.toLocaleString()} riel</span>
+            `;
+        } else {
+            // estimate kWh from price
+            let rate;
+
+            if (value <= 10 * 380) rate = 380;
+            else if (value <= 50 * 480) rate = 480;
+            else if (value <= 200 * 610) rate = 610;
+            else rate = 730;
+
+            const kwh = value / rate;
+
+            result.innerHTML = `
+                Estimated Rate: <span class="highlight">${rate} riel/kWh</span><br>
+                Estimated Usage: <span class="highlight">${kwh.toFixed(2)} kWh</span>
+            `;
+        }
+
+        result.style.display = "block";
+    }
+</script>
+
+</body>
+</html>
+
